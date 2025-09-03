@@ -78,7 +78,14 @@
         <!-- CONTROLS PANEL -->
         <aside id="controlsPanel" class="w-full max-w-sm lg:w-[26rem] p-6 sm:p-8 border-b lg:border-b-0 lg:border-r border-stone-200 flex flex-col flex-shrink-0 fixed lg:relative inset-y-0 left-0 z-40 bg-white transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
             <div>
-                <h1 class="text-3xl font-bold text-teal-800 mb-2">Weaver's Canvas</h1>
+                <div class="flex justify-between items-center mb-2">
+                    <h1 class="text-3xl font-bold text-teal-800">Weaver's Canvas</h1>
+                    <button id="aboutIconBtn" class="btn text-stone-400 hover:text-teal-600 hover:bg-teal-50 rounded-full p-2 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2" aria-label="About this project">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </button>
+                </div>
                 <p class="text-sm text-stone-600 mb-6">Create and visualize digital weaving patterns.</p>
             </div>
             
@@ -252,6 +259,26 @@
         </div>
     </div>
 
+    <!-- About Modal -->
+    <div id="aboutModal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-lg shadow-xl max-w-lg w-full p-6 sm:p-8 relative transform transition-all" role="dialog" aria-modal="true" aria-labelledby="modal-headline">
+            <button id="closeModalBtn" class="absolute top-3 right-3 text-stone-400 hover:text-stone-600 p-1 rounded-full hover:bg-stone-100 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            <h2 class="text-2xl font-bold text-teal-800 mb-4" id="modal-headline">About Weaver's Canvas</h2>
+            <div class="text-stone-700 space-y-4">
+                <p>This interactive tool was created by Phileas Dazeley-Gaist on a whim as a passion project. It's designed to help weavers, designers, and hobbyists quickly visualize and randomize complex weaving patterns.</p>
+                <p>If you find this tool useful or inspiring, please consider supporting its continued development or checking out more of my work below.</p>
+                <div class="border-t border-stone-200 pt-4 space-y-2">
+                    <a href="https://phileasdg.github.io/" target="_blank" rel="noopener noreferrer" class="block text-teal-600 hover:text-teal-700 hover:underline font-semibold transition-colors">Personal Blog &rarr;</a>
+                    <a href="https://www.paypal.com/donate/?business=K74DYULZRHZ2J&no_recurring=0&item_name=Buy+me+a+coffee+%3AD&currency_code=USD" target="_blank" rel="noopener noreferrer" class="block text-teal-600 hover:text-teal-700 hover:underline font-semibold transition-colors">Buy me a coffee &rarr;</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // DOM Elements
         const canvas = document.getElementById('weavingCanvas');
@@ -279,6 +306,11 @@
         const menuToggleBtn = document.getElementById('menuToggleBtn');
         const controlsPanel = document.getElementById('controlsPanel');
         const menuBackdrop = document.getElementById('menuBackdrop');
+
+        // Modal Elements
+        const aboutBtn = document.getElementById('aboutIconBtn');
+        const aboutModal = document.getElementById('aboutModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
 
         // Canvas transform state
         let zoom = 1;
@@ -926,6 +958,21 @@
             offsetX = mouseX - (mouseX - offsetX) * (zoom / oldZoom);
             offsetY = mouseY - (mouseY - offsetY) * (zoom / oldZoom);
             drawPattern();
+        });
+        
+        aboutBtn.addEventListener('click', () => {
+            aboutModal.classList.remove('hidden');
+        });
+
+        closeModalBtn.addEventListener('click', () => {
+            aboutModal.classList.add('hidden');
+        });
+
+        aboutModal.addEventListener('click', (e) => {
+            // Closes modal if user clicks on the backdrop
+            if (e.target === aboutModal) {
+                aboutModal.classList.add('hidden');
+            }
         });
 
         // Initial setup on page load
