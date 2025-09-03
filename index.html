@@ -251,8 +251,13 @@
 
         <!-- VISUALIZATION AREA -->
         <main class="w-full flex-1 bg-stone-200 flex flex-col items-center justify-center relative overflow-hidden p-2 sm:p-4 lg:p-6">
-             <div class="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs text-stone-500 bg-stone-300/50 rounded-md px-2 py-1 pointer-events-none z-10">
+            <!-- Desktop hint -->
+             <div class="hidden lg:block absolute bottom-4 left-1/2 -translate-x-1/2 text-xs text-stone-500 bg-stone-300/50 rounded-md px-2 py-1 pointer-events-none z-10">
                 Scroll to zoom, drag to pan
+            </div>
+            <!-- Mobile hint -->
+            <div class="lg:hidden absolute bottom-4 right-4 text-xs text-stone-500 bg-white/60 backdrop-blur-sm rounded-full px-3 py-1.5 pointer-events-none z-10 shadow">
+                Zoom & Pan
             </div>
             <canvas id="weavingCanvas" class="bg-white rounded-lg shadow-inner w-full h-full"></canvas>
         </main>
@@ -275,6 +280,51 @@
                     <a href="https://phileasdg.github.io/" target="_blank" rel="noopener noreferrer" class="block text-teal-600 hover:text-teal-700 hover:underline font-semibold transition-colors">Personal Blog &rarr;</a>
                     <a href="https://www.paypal.com/donate/?business=K74DYULZRHZ2J&no_recurring=0&item_name=Buy+me+a+coffee+%3AD&currency_code=USD" target="_blank" rel="noopener noreferrer" class="block text-teal-600 hover:text-teal-700 hover:underline font-semibold transition-colors">Buy me a coffee &rarr;</a>
                 </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tutorial Modal -->
+    <div id="tutorialModal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-lg shadow-xl max-w-lg w-full p-6 sm:p-8 relative transform transition-all max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="tutorial-headline">
+            <button id="closeTutorialBtn" class="absolute top-3 right-3 text-stone-400 hover:text-stone-600 p-1 rounded-full hover:bg-stone-100 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            <h2 class="text-2xl font-bold text-teal-800 mb-4" id="tutorial-headline">Welcome to Weaver's Canvas</h2>
+            
+            <!-- Desktop Instructions -->
+            <div class="hidden lg:block text-stone-700 space-y-4">
+                <p class="font-semibold">Key Features:</p>
+                <ul class="list-disc list-inside space-y-2">
+                    <li><strong class="font-semibold">Controls Panel:</strong> Located on the left, this panel contains all settings for pattern structure, dimensions, and color.</li>
+                    <li><strong class="font-semibold">Visualization Area:</strong> The main canvas on the right displays the pattern. Interact by dragging to pan and scrolling to zoom.</li>
+                    <li><strong class="font-semibold">Generate Random:</strong> This button randomizes all settings to generate a new pattern.</li>
+                    <li><strong class="font-semibold">Download PNG:</strong> Saves a high-resolution image of the current pattern.</li>
+                </ul>
+                <p>All settings are organized within the accordion sections in the controls panel.</p>
+            </div>
+
+            <!-- Mobile Instructions -->
+            <div class="lg:hidden text-stone-700 space-y-4">
+                 <p class="font-semibold">How to Use:</p>
+                 <ul class="list-disc list-inside space-y-2">
+                    <li><strong class="font-semibold">Open Controls:</strong> Tap the <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block -mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg> icon in the top-left to access the controls panel.</li>
+                    <li><strong class="font-semibold">Adjust Settings:</strong> The panel contains all settings for pattern structure, dimensions, and color.</li>
+                    <li><strong class="font-semibold">Interact with Pattern:</strong> Use standard touch gestures to interact. Pinch to zoom and drag with one finger to pan.</li>
+                    <li><strong class="font-semibold">Generate & Download:</strong> These functions are located at the bottom of the controls panel.</li>
+                </ul>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-stone-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="flex items-center">
+                    <input type="checkbox" id="dontShowTutorialCheckbox" class="h-4 w-4 text-teal-600 border-stone-300 rounded focus:ring-teal-500">
+                    <label for="dontShowTutorialCheckbox" class="ml-2 block text-sm text-stone-700">Don't show this again</label>
+                </div>
+                <button id="tutorialGotItBtn" class="btn w-full sm:w-auto bg-teal-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-teal-700 transition-colors shadow-sm">
+                    Got it!
+                </button>
             </div>
         </div>
     </div>
@@ -311,6 +361,10 @@
         const aboutBtn = document.getElementById('aboutIconBtn');
         const aboutModal = document.getElementById('aboutModal');
         const closeModalBtn = document.getElementById('closeModalBtn');
+        const tutorialModal = document.getElementById('tutorialModal');
+        const closeTutorialBtn = document.getElementById('closeTutorialBtn');
+        const dontShowTutorialCheckbox = document.getElementById('dontShowTutorialCheckbox');
+        const tutorialGotItBtn = document.getElementById('tutorialGotItBtn');
 
         // Canvas transform state
         let zoom = 1;
@@ -796,8 +850,35 @@
             const numEntries = Math.floor(Math.random() * (maxSettEntries - minSettEntries + 1)) + minSettEntries;
 
             const patternTypes = ['plain', 'twill', 'satin', 'basket', 'tartan'];
-            patternSelect.value = patternTypes[Math.floor(Math.random() * patternTypes.length)];
+            const newPatternType = patternTypes[Math.floor(Math.random() * patternTypes.length)];
+            patternSelect.value = newPatternType;
             
+            // Create the UI inputs for the chosen pattern type
+            updatePatternSettingsUI(); 
+
+            // Now, set random values for the newly created inputs
+            switch (newPatternType) {
+                case 'twill': {
+                    const over = Math.floor(Math.random() * 4) + 2; // 2 to 5
+                    const under = Math.floor(Math.random() * 3) + 1; // 1 to 3
+                    document.getElementById('twillOver').value = over;
+                    document.getElementById('twillUnder').value = under;
+                    break;
+                }
+                case 'satin': {
+                    // Common satin numbers are 5, 7, 8.
+                    const harnessOptions = [5, 7, 8];
+                    const harness = harnessOptions[Math.floor(Math.random() * harnessOptions.length)];
+                    document.getElementById('satinHarness').value = harness;
+                    break;
+                }
+                case 'basket': {
+                    const size = Math.floor(Math.random() * 3) + 2; // 2, 3, or 4
+                    document.getElementById('basketSize').value = size;
+                    break;
+                }
+            }
+
             const generateSettFromPalette = (palette, numEntries, minThreads, maxThreads) => {
                 if (palette.length === 0) return [];
                 const sett = [];
@@ -860,7 +941,6 @@
             warpRepeatSelect.value = repeatTypes[Math.floor(Math.random() * repeatTypes.length)];
             weftRepeatSelect.value = repeatTypes[Math.floor(Math.random() * repeatTypes.length)];
             
-            updatePatternSettingsUI();
             handleUIDrivenUpdate(true);
         }
         
@@ -969,9 +1049,24 @@
         });
 
         aboutModal.addEventListener('click', (e) => {
-            // Closes modal if user clicks on the backdrop
             if (e.target === aboutModal) {
                 aboutModal.classList.add('hidden');
+            }
+        });
+
+        function closeTutorial() {
+            if (dontShowTutorialCheckbox.checked) {
+                localStorage.setItem('showTutorial', 'false');
+            }
+            tutorialModal.classList.add('hidden');
+        }
+
+        closeTutorialBtn.addEventListener('click', closeTutorial);
+        tutorialGotItBtn.addEventListener('click', closeTutorial);
+
+        tutorialModal.addEventListener('click', (e) => {
+            if (e.target === tutorialModal) {
+                closeTutorial();
             }
         });
 
@@ -1004,6 +1099,11 @@
             // Now run the initial setup
             setupMinMaxValidation();
             generateRandomPattern(); // This populates all dynamic UI content
+
+            // Show tutorial modal on first visit
+            if (localStorage.getItem('showTutorial') !== 'false') {
+                tutorialModal.classList.remove('hidden');
+            }
         });
         
         let resizeTimeout;
